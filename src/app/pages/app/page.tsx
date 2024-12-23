@@ -1,8 +1,29 @@
-import React from "react";
+"use client"; // 标记为客户端组件
+import React, {useEffect, useState} from "react";
 import appIcon from "@/assets/bg.png"; // 替换成你的应用图标路径
 import Image from "next/image";
+import {getAppData} from "@/api/app";
+
+interface AppDetails {
+    ID: number;
+    CreatedAt: string;
+    UpdatedAt: string;
+    DeletedAt: string | null;
+    title: string;
+    version: string;
+    description: string;
+    features: string;
+}
 
 function App() {
+    const [data, setData] = useState<AppDetails | null>(null);
+    const getAppDetails = async () => {
+        const res = await getAppData(1)
+        setData(res);
+    }
+    useEffect(() => {
+        getAppDetails()
+    }, [])
     return (
         <div className="bg-black text-white min-h-screen flex flex-col items-center">
             {/* 应用背景图片 */}
@@ -27,18 +48,20 @@ function App() {
                     className="w-16 h-16 rounded-xl border-2 border-gray-700"
                 />
                 <div className="ml-4 flex-1">
-                    <h1 className="text-2xl font-bold">王者荣耀</h1>
-                    <p className="text-sm text-gray-400">S37赛季 暗影狂舞</p>
+                    <h1 className="text-2xl font-bold">{data?.title || "加载中..."}</h1>
+                    <p className="text-sm text-gray-400">{data?.version || "1.0.0"}</p>
                 </div>
-                <button className="bg-blue-500 px-6 py-2 rounded-full font-bold">
+                <button
+                    className="bg-blue-500 px-6 py-2 rounded-full  text-center flex items-center justify-center">
                     下载
                 </button>
+
             </div>
 
             {/* 简介 */}
             <div className="w-full px-6 mt-4">
                 <p className="mt-4 text-gray-300">
-                    新英雄-影：昔日战死的“东君”，如今从死地复生归来，她会为云梦泽带来怎样的改变？觉醒了不死之力的影，受到致命伤害...
+                {data?.description || "暂无简介"}
                 </p>
             </div>
 
@@ -47,13 +70,14 @@ function App() {
                 <h2 className="text-lg font-bold mb-2">版本更新</h2>
                 <div className="bg-gray-800 p-4 rounded-lg">
                     <p className="text-gray-300">
-                        版本 3.1.0 更新内容：
+                        版本 {data?.version} 更新内容：
                     </p>
                     <ul className="list-disc list-inside text-gray-400 mt-2">
-                        <li>新增英雄：影，觉醒不死之力，掀起新的战争。</li>
-                        <li>优化匹配机制，提升游戏公平性。</li>
-                        <li>修复部分设备适配问题，提升运行性能。</li>
-                        <li>新增赛季皮肤和限时活动。</li>
+                        {data?.features
+                            ?.split(";")
+                            .map((feature, index) => (
+                                <li key={index}>{feature}</li>
+                            )) || <li>加载中...</li>}
                     </ul>
                 </div>
             </div>

@@ -1,9 +1,9 @@
-import App from "@/app/pages/app/page";
+import List from '@/app/pages/list/pages'
 
 export default function Home() {
     return (
         <div>
-            <App></App>
+            <List></List>
         </div>
     );
 }
