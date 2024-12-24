@@ -37,7 +37,7 @@ function AppListPage() {
             <div className="flex justify-between items-center px-6 py-4 bg-gray-800">
                 <h1 className="text-xl font-bold">应用列表</h1>
                 <button
-                    onClick={() => router.push("/apps/add")}
+                    onClick={() => router.push("/addApp/")}
                     className="bg-blue-500 px-4 py-2 rounded-lg font-bold text-sm"
                 >
                     新增应用
