@@ -13,4 +13,3 @@ export const getAppList = () => {
 export const addApp = (data: never) => {
     return request.post(`/api/apps/addApp`, data);
 };
-
