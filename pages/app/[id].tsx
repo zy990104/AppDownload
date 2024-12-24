@@ -1,8 +1,10 @@
 "use client"; // 标记为客户端组件
 import React, {useEffect, useState} from "react";
-import appIcon from "@/assets/bg.png"; // 替换成你的应用图标路径
+import appIcon from "../../assets/bg.png"; // 替换成你的应用图标路径
 import Image from "next/image";
-import {getAppData} from "@/api/app";
+import {getAppData} from "../../api/app";
+import {useRouter} from "next/router";
+
 
 interface AppDetails {
     ID: number;
@@ -16,9 +18,11 @@ interface AppDetails {
 }
 
 function App() {
+    const router = useRouter();
+    const { id } = router.query; // 动态获取 URL 参数
     const [data, setData] = useState<AppDetails | null>(null);
     const getAppDetails = async () => {
-        const res = await getAppData(1)
+        const res = await getAppData(id)
         setData(res);
     }
     useEffect(() => {
@@ -28,6 +32,12 @@ function App() {
         <div className="bg-black text-white min-h-screen flex flex-col items-center">
             {/* 应用背景图片 */}
             <div className="relative w-full h-64">
+                {/* 左上角返回按钮 */}
+                <button
+                    onClick={() => router.back()}
+                    className="absolute top-4 left-4 p-2 bg-gray-700 rounded-full text-white">
+                    ←
+                </button>
                 <Image
                     src={appIcon} // 替换成你的背景图链接
                     alt="背景图"

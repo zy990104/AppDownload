@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { getAppList } from "@/api/app"; // 假设这是你的获取列表的 API
-import { useRouter } from "next/navigation";
+import React, {useEffect, useState} from "react";
+import {getAppList} from "../../api/app"; // 假设这是你的获取列表的 API
+import {useRouter} from "next/navigation";
 
 interface AppItem {
     ID: number;
@@ -14,12 +14,16 @@ interface AppItem {
     features: string;
 }
 
+interface AppListResponse {
+    data: AppItem[];
+}
+
 function AppListPage() {
     const [apps, setApps] = useState<AppItem[]>([]);
     const router = useRouter();
 
     const fetchApps = async () => {
-        const res = await getAppList();
+        const res: AppListResponse = await getAppList();
         setApps(res.data || []); // 获取到的 App 列表
     };
 
@@ -57,7 +61,9 @@ function AppListPage() {
                                     {app.description}
                                 </p>
                                 <button
-                                    onClick={() => router.push(`/apps/${app.ID}`)}
+                                    onClick={() => {
+                                        router.push(`/app/${app.ID}`)
+                                    }}
                                     className="mt-auto bg-blue-500 text-white px-4 py-2 rounded-lg font-bold text-sm"
                                 >
                                     查看详情

@@ -1,4 +1,5 @@
-import List from '@/app/pages/list/pages'
+import List from './list/pages'
+import "./globals.css";
 
 export default function Home() {
     return (

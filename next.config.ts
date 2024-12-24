@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     async rewrites() {
         return [
             {
-                source: '/:path*', // 本地请求地址
+                source: '/api/:path*',
                 destination: 'http://127.0.0.1:8080/:path*', // 目标接口地址
             },
         ];
