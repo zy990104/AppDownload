@@ -13,5 +13,5 @@ export const getAppList = () => {
 };
 // 获取app数据
 export const addApp = (data: AppData) => {
-    return request.post(`/api/apps/addApp`, data);
+    return request.post<AppData>(`/api/apps/addApp`, data);
 };

@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import axios, {AxiosRequestConfig, AxiosResponse} from "axios";
 
 // 创建 axios 实例
 const service = axios.create({
@@ -26,20 +26,20 @@ service.interceptors.response.use(
 
 // 基础请求方法
 const request = {
-    get<T = never>(url: string, params?: never, config?: AxiosRequestConfig): Promise<T> {
-        return service({ url, method: "get", params, ...config });
+    get<T = never>(url: string, params?: T, config?: AxiosRequestConfig): Promise<T> {
+        return service({url, method: "get", params, ...config});
     },
 
-    post<T = never>(url: string, data?: never, config?: AxiosRequestConfig): Promise<T> {
-        return service({ url, method: "post", data, ...config });
+    post<T = never>(url: string, data?: T, config?: AxiosRequestConfig): Promise<T> {
+        return service({url, method: "post", data, ...config});
     },
 
-    put<T = never>(url: string, data?: never, config?: AxiosRequestConfig): Promise<T> {
-        return service({ url, method: "put", data, ...config });
+    put<T = never>(url: string, data?: T, config?: AxiosRequestConfig): Promise<T> {
+        return service({url, method: "put", data, ...config});
     },
 
-    delete<T = never>(url: string, params?: never, config?: AxiosRequestConfig): Promise<T> {
-        return service({ url, method: "delete", params, ...config });
+    delete<T = never>(url: string, params?: T, config?: AxiosRequestConfig): Promise<T> {
+        return service({url, method: "delete", params, ...config});
     },
 };
 
