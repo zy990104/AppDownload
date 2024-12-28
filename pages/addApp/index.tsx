@@ -4,13 +4,7 @@ import {addApp} from "../../api/app";
 import LoadingSpinner from "../../components/LoadingSpinner";
 import {Image, Upload} from "antd";
 import type {GetProp, UploadFile, UploadProps} from "antd";
-
-interface AppData {
-    title: string;
-    description: string;
-    appIcon: string;
-    fileList: string[];
-}
+import {AppData} from "../../model/type/app_data";
 
 type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
