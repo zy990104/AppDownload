@@ -1,19 +1,18 @@
 import React, {useState} from "react";
 import {useRouter} from "next/router";
-import {addApp} from "../../api/app"; // 假设你有 addApp 方法来处理提交请求
-import LoadingSpinner from "../../components/LoadingSpinner"; // 引入 LoadingSpinner 组件
-import {Image, Upload} from 'antd';
-import type {GetProp, UploadFile, UploadProps} from 'antd';
+import {addApp} from "../../api/app";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import {Image, Upload} from "antd";
+import type {GetProp, UploadFile, UploadProps} from "antd";
 
 interface AppData {
     title: string;
     description: string;
-    version: string;
-    features: string;
+    appIcon: string;
     fileList: string[];
 }
 
-type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
+type FileType = Parameters<GetProp<UploadProps, "beforeUpload">>[0];
 
 const getBase64 = (file: FileType): Promise<string> =>
     new Promise((resolve, reject) => {
@@ -24,72 +23,82 @@ const getBase64 = (file: FileType): Promise<string> =>
     });
 
 function AddApp() {
-
     const [previewOpen, setPreviewOpen] = useState(false);
-    const [previewImage, setPreviewImage] = useState('');
-    const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [previewImage, setPreviewImage] = useState("");
+    const [appPreviewOpen, setAppPreviewOpen] = useState(false);
+    const [appPreviewImage, setAppPreviewImage] = useState("");
+    const [appIconFileList, setAppIconFileList] = useState<UploadFile[]>([]); // 独立的文件列表
+    const [imageFileList, setImageFileList] = useState<UploadFile[]>([]); // 独立的文件列表
     const [loading, setLoading] = useState<boolean>(false); // 控制加载状态
     const [success, setSuccess] = useState<boolean>(false); // 控制是否成功
     const router = useRouter();
     const [appData, setAppData] = useState<AppData>({
         title: "",
         description: "",
-        version: "",
-        features: "",
-        fileList: []
+        appIcon: "",
+        fileList: [],
     });
+
     const handlePreview = async (file: UploadFile) => {
         if (!file.url && !file.preview) {
             file.preview = await getBase64(file.originFileObj as FileType);
         }
-
         setPreviewImage(file.url || (file.preview as string));
         setPreviewOpen(true);
     };
-    const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
-        setFileList(newFileList);
-        newFileList.forEach(file => {
+
+    const handleAppIconChange: UploadProps["onChange"] = ({fileList: newFileList}) => {
+        setAppIconFileList(newFileList);
+        newFileList.forEach((file) => {
             if (file.status === "done") {
-                setAppData(i => ({
-                    ...i,
-                    fileList: [
-                        ...i.fileList,
-                        file.response.url
-                    ]
+                setAppData((prev) => ({
+                    ...prev,
+                    appIcon: file.response.url, // 设置应用图标的 URL
                 }));
             }
-        })
+        });
     };
+
+    const handleImageChange: UploadProps["onChange"] = ({fileList: newFileList}) => {
+        setAppData(p => ({
+            ...p,
+            fileList: []
+        }))
+        setImageFileList(newFileList);
+        newFileList.forEach((file) => {
+            if (file.status === "done") {
+                setAppData((prev) => ({
+                    ...prev,
+                    fileList: [...prev.fileList, file.response.url], // 保存图片预览文件列表
+                }));
+            }
+        });
+    };
+
     const uploadButton = (
-        <button style={{border: 0, background: 'none'}} type="button">
+        <button style={{border: 0, background: "none"}} type="button">
             <div style={{marginTop: 8}}>Upload</div>
         </button>
     );
-    // 提交表单处理
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true); // 开始加载
-
+        setLoading(true);
         try {
-            // 提交表单数据
             console.log("提交的应用数据：", appData);
-            const response = await addApp(appData); // 假设你有 addApp 方法来处理提交请求
-
+            const response = await addApp(appData);
             console.log("新增成功：", response);
-
-            // 提交成功，显示提示框
             setSuccess(true);
         } catch (error) {
             console.error("新增失败：", error);
             alert("新增失败，请稍后再试！");
         } finally {
-            setLoading(false); // 停止加载
+            setLoading(false);
         }
     };
 
-    // 提交成功后，点击确定按钮跳转回首页
     const handleSuccessConfirm = () => {
-        router.push("/"); // 跳转到首页
+        router.push("/");
     };
 
     return (
@@ -114,9 +123,35 @@ function AddApp() {
                         />
                     </div>
 
+                    {/* 应用图标 */}
                     <div>
-                        <label htmlFor="description" className="block text-gray-700 text-lg">应用描述</label>
-                        <textarea
+                        <label htmlFor="appIcon" className="block text-gray-700 text-lg">应用图标</label>
+                        <Upload
+                            action="/api/files/upload"
+                            listType="picture-circle"
+                            fileList={appIconFileList}
+                            onPreview={handlePreview}
+                            maxCount={1}
+                            onChange={handleAppIconChange}
+                        >
+                            {appIconFileList.length < 1 && uploadButton}
+                        </Upload>
+                        {appPreviewImage && (
+                            <Image
+                                wrapperStyle={{display: "none"}}
+                                preview={{
+                                    visible: appPreviewOpen,
+                                    onVisibleChange: (visible) => setAppPreviewOpen(visible),
+                                    afterOpenChange: (visible) => !visible && setAppPreviewImage(""),
+                                }}
+                                src={appPreviewImage}
+                            />
+                        )}
+                    </div>
+                    <div>
+                        <label htmlFor="description" className="block text-gray-700 text-lg">应用简介</label>
+                        <input
+                            type="text"
                             id="description"
                             value={appData.description}
                             onChange={(e) => setAppData({...appData, description: e.target.value})}
@@ -124,53 +159,30 @@ function AddApp() {
                             required
                         />
                     </div>
-
+                    {/* 图片预览 */}
                     <div>
-                        <label htmlFor="version" className="block text-gray-700 text-lg">版本</label>
-                        <input
-                            type="text"
-                            id="version"
-                            value={appData.version}
-                            onChange={(e) => setAppData({...appData, version: e.target.value})}
-                            className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <label htmlFor="features" className="block text-gray-700 text-lg">功能列表</label>
-                        <textarea
-                            id="features"
-                            value={appData.features}
-                            onChange={(e) => setAppData({...appData, features: e.target.value})}
-                            className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label htmlFor="features" className="block text-gray-700 text-lg">上传图片</label>
+                        <label htmlFor="features" className="block text-gray-700 text-lg">图片预览</label>
                         <Upload
                             action="/api/files/upload"
                             listType="picture-circle"
-                            fileList={fileList}
+                            fileList={imageFileList}
                             onPreview={handlePreview}
-                            onChange={handleChange}
+                            onChange={handleImageChange}
                         >
-                            {fileList.length >= 8 ? null : uploadButton}
+                            {imageFileList.length < 8 && uploadButton}
                         </Upload>
                         {previewImage && (
                             <Image
-                                wrapperStyle={{display: 'none'}}
+                                wrapperStyle={{display: "none"}}
                                 preview={{
                                     visible: previewOpen,
                                     onVisibleChange: (visible) => setPreviewOpen(visible),
-                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                    afterOpenChange: (visible) => !visible && setPreviewImage(""),
                                 }}
                                 src={previewImage}
                             />
                         )}
                     </div>
-
                 </div>
 
                 {/* 提交按钮 */}
