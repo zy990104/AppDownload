@@ -1,27 +1,70 @@
-import React, { useState } from "react";
-import { useRouter } from "next/router";
-import { addApp } from "../../api/app"; // 假设你有 addApp 方法来处理提交请求
+import React, {useState} from "react";
+import {useRouter} from "next/router";
+import {addApp} from "../../api/app"; // 假设你有 addApp 方法来处理提交请求
 import LoadingSpinner from "../../components/LoadingSpinner"; // 引入 LoadingSpinner 组件
+import {Image, Upload} from 'antd';
+import type {GetProp, UploadFile, UploadProps} from 'antd';
 
 interface AppData {
     title: string;
     description: string;
     version: string;
     features: string;
+    fileList: string[];
 }
 
+type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0];
+
+const getBase64 = (file: FileType): Promise<string> =>
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = (error) => reject(error);
+    });
+
 function AddApp() {
+
+    const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState('');
+    const [fileList, setFileList] = useState<UploadFile[]>([]);
+    const [loading, setLoading] = useState<boolean>(false); // 控制加载状态
+    const [success, setSuccess] = useState<boolean>(false); // 控制是否成功
+    const router = useRouter();
     const [appData, setAppData] = useState<AppData>({
         title: "",
         description: "",
         version: "",
-        features: ""
+        features: "",
+        fileList: []
     });
+    const handlePreview = async (file: UploadFile) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originFileObj as FileType);
+        }
 
-    const [loading, setLoading] = useState<boolean>(false); // 控制加载状态
-    const [success, setSuccess] = useState<boolean>(false); // 控制是否成功
-    const router = useRouter();
-
+        setPreviewImage(file.url || (file.preview as string));
+        setPreviewOpen(true);
+    };
+    const handleChange: UploadProps['onChange'] = ({fileList: newFileList}) => {
+        setFileList(newFileList);
+        newFileList.forEach(file => {
+            if (file.status === "done") {
+                setAppData(i => ({
+                    ...i,
+                    fileList: [
+                        ...i.fileList,
+                        file.response.url
+                    ]
+                }));
+            }
+        })
+    };
+    const uploadButton = (
+        <button style={{border: 0, background: 'none'}} type="button">
+            <div style={{marginTop: 8}}>Upload</div>
+        </button>
+    );
     // 提交表单处理
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -65,7 +108,7 @@ function AddApp() {
                             type="text"
                             id="title"
                             value={appData.title}
-                            onChange={(e) => setAppData({ ...appData, title: e.target.value })}
+                            onChange={(e) => setAppData({...appData, title: e.target.value})}
                             className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                             required
                         />
@@ -76,7 +119,7 @@ function AddApp() {
                         <textarea
                             id="description"
                             value={appData.description}
-                            onChange={(e) => setAppData({ ...appData, description: e.target.value })}
+                            onChange={(e) => setAppData({...appData, description: e.target.value})}
                             className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                             required
                         />
@@ -88,7 +131,7 @@ function AddApp() {
                             type="text"
                             id="version"
                             value={appData.version}
-                            onChange={(e) => setAppData({ ...appData, version: e.target.value })}
+                            onChange={(e) => setAppData({...appData, version: e.target.value})}
                             className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                             required
                         />
@@ -99,11 +142,35 @@ function AddApp() {
                         <textarea
                             id="features"
                             value={appData.features}
-                            onChange={(e) => setAppData({ ...appData, features: e.target.value })}
+                            onChange={(e) => setAppData({...appData, features: e.target.value})}
                             className="w-full p-3 border border-gray-300 rounded-md shadow-md focus:ring-2 focus:ring-blue-500 transition-all duration-300"
                             required
                         />
                     </div>
+                    <div>
+                        <label htmlFor="features" className="block text-gray-700 text-lg">上传图片</label>
+                        <Upload
+                            action="/api/files/upload"
+                            listType="picture-circle"
+                            fileList={fileList}
+                            onPreview={handlePreview}
+                            onChange={handleChange}
+                        >
+                            {fileList.length >= 8 ? null : uploadButton}
+                        </Upload>
+                        {previewImage && (
+                            <Image
+                                wrapperStyle={{display: 'none'}}
+                                preview={{
+                                    visible: previewOpen,
+                                    onVisibleChange: (visible) => setPreviewOpen(visible),
+                                    afterOpenChange: (visible) => !visible && setPreviewImage(''),
+                                }}
+                                src={previewImage}
+                            />
+                        )}
+                    </div>
+
                 </div>
 
                 {/* 提交按钮 */}
@@ -113,7 +180,7 @@ function AddApp() {
                         className="bg-blue-500 text-white px-6 py-3 rounded-full w-full max-w-xs transition transform hover:scale-105 disabled:bg-gray-400 disabled:cursor-not-allowed"
                         disabled={loading}
                     >
-                        {loading ? <LoadingSpinner /> : "提交"}
+                        {loading ? <LoadingSpinner/> : "提交"}
                     </button>
                 </div>
             </form>
