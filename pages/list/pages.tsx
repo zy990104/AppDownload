@@ -54,10 +54,7 @@ function AppListPage() {
                                 className="bg-gray-800 p-4 rounded-lg shadow-lg flex flex-col"
                             >
                                 <h2 className="text-lg font-bold">{app.title}</h2>
-                                <p className="text-gray-400 text-sm mt-2">
-                                    版本：{app.version}
-                                </p>
-                                <p className="text-gray-500 text-sm mt-2">
+                                <p className="text-gray-500 text-sm mt-2 mb-2">
                                     {app.description}
                                 </p>
                                 <button

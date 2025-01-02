@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
             },
         ];
     },
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'http', // 协议
+                hostname: '61.185.125.170', // 域名
+                pathname: '/klf-sp/**', // 路径模式，可以是通配符
+            },
+        ],
+    },
 };
 
 export default nextConfig;

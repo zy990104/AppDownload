@@ -4,23 +4,12 @@ import appIcon from "../../assets/bg.png"; // 替换成你的应用图标路径
 import Image from "next/image";
 import {getAppData} from "../../api/app";
 import {useRouter} from "next/router";
-
-
-interface AppDetails {
-    ID: number;
-    CreatedAt: string;
-    UpdatedAt: string;
-    DeletedAt: string | null;
-    title: string;
-    version: string;
-    description: string;
-    features: string;
-}
+import {AppData} from "../../model/type/app_data";
 
 function App() {
     const router = useRouter();
-    const { id } = router.query; // 动态获取 URL 参数
-    const [data, setData] = useState<AppDetails | null>(null);
+    const {id} = router.query; // 动态获取 URL 参数
+    const [data, setData] = useState<AppData | null>(null);
     const getAppDetails = async () => {
         const res = await getAppData(id)
         setData(res);
@@ -39,7 +28,7 @@ function App() {
                     ←
                 </button>
                 <Image
-                    src={appIcon} // 替换成你的背景图链接
+                    src={data?.appIcon || appIcon} // 替换成你的背景图链接
                     alt="背景图"
                     className="w-full h-full object-cover"
                     width={300}
@@ -53,13 +42,13 @@ function App() {
                 <Image
                     width={300}
                     height={300}
-                    src={appIcon}
+                    src={data?.appIcon || appIcon}
                     alt="App Icon"
                     className="w-16 h-16 rounded-xl border-2 border-gray-700"
                 />
                 <div className="ml-4 flex-1">
                     <h1 className="text-2xl font-bold">{data?.title || "加载中..."}</h1>
-                    <p className="text-sm text-gray-400">{data?.version || "1.0.0"}</p>
+                    {/*<p className="text-sm text-gray-400">{data?.version || "1.0.0"}</p>*/}
                 </div>
                 <button
                     className="bg-blue-500 px-6 py-2 rounded-full  text-center flex items-center justify-center">
@@ -71,45 +60,45 @@ function App() {
             {/* 简介 */}
             <div className="w-full px-6 mt-4">
                 <p className="mt-4 text-gray-300">
-                {data?.description || "暂无简介"}
+                    {data?.description || "暂无简介"}
                 </p>
             </div>
 
-            {/* 版本更新 */}
-            <div className="w-full px-6 mt-6">
-                <h2 className="text-lg font-bold mb-2">版本更新</h2>
-                <div className="bg-gray-800 p-4 rounded-lg">
-                    <p className="text-gray-300">
-                        版本 {data?.version} 更新内容：
-                    </p>
-                    <ul className="list-disc list-inside text-gray-400 mt-2">
-                        {data?.features
-                            ?.split(";")
-                            .map((feature, index) => (
-                                <li key={index}>{feature}</li>
-                            )) || <li>加载中...</li>}
-                    </ul>
-                </div>
-            </div>
+            {/*/!* 版本更新 *!/*/}
+            {/*<div className="w-full px-6 mt-6">*/}
+            {/*    <h2 className="text-lg font-bold mb-2">版本更新</h2>*/}
+            {/*    <div className="bg-gray-800 p-4 rounded-lg">*/}
+            {/*        <p className="text-gray-300">*/}
+            {/*            版本 {data?.version} 更新内容：*/}
+            {/*        </p>*/}
+            {/*        <ul className="list-disc list-inside text-gray-400 mt-2">*/}
+            {/*            {data?.features*/}
+            {/*                ?.split(";")*/}
+            {/*                .map((feature, index) => (*/}
+            {/*                    <li key={index}>{feature}</li>*/}
+            {/*                )) || <li>加载中...</li>}*/}
+            {/*        </ul>*/}
+            {/*    </div>*/}
+            {/*</div>*/}
 
             {/* 预览图片 */}
             <div className="w-full px-6 mt-6">
                 <h2 className="text-lg font-bold mb-2">预览</h2>
                 <div className="flex overflow-x-scroll space-x-4">
-                    <Image
-                        width={300}
-                        height={300}
-                        src={appIcon}
-                        alt="预览图1"
-                        className="rounded-lg"
-                    />
-                    <Image
-                        width={300}
-                        height={300}
-                        src={appIcon}
-                        alt="预览图2"
-                        className="rounded-lg"
-                    />
+                    {
+                        data?.fileList.map((file, index) => {
+                            return (
+                                <Image
+                                    key={index}
+                                    width={300}
+                                    height={300}
+                                    src={file}
+                                    alt={`预览图${index + 1}`} // 使用动态的 alt 文本
+                                    className="rounded-lg"
+                                />
+                            );
+                        })
+                    }
                 </div>
             </div>
 
